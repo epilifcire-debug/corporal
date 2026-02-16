@@ -1,129 +1,209 @@
 ```javascript
-// ================================
-// BODYTRACK PRO - APP.JS FINAL
-// ================================
+/* BODYTRACK PRO - APP.JS FINAL LIMPO E CORRIGIDO */
 
-// BANCO
-let db;
-let profile;
+"use strict";
+
+/* =========================
+   VARIÁVEIS GLOBAIS
+========================= */
+
+let db = null;
+let profile = null;
 let charts = {};
 
-// ================================
-// INICIAR BANCO
-// ================================
+/* =========================
+   INICIAR BANCO
+========================= */
 
 const request = indexedDB.open("bodytrack", 1);
 
-request.onupgradeneeded = e => {
+request.onupgradeneeded = function(event){
 
-    db = e.target.result;
+    db = event.target.result;
 
-    db.createObjectStore("profiles", {
-        keyPath: "id",
-        autoIncrement: true
-    });
+    if(!db.objectStoreNames.contains("profiles")){
 
-    const medidas = db.createObjectStore("medidas", {
-        keyPath: "id",
-        autoIncrement: true
-    });
+        db.createObjectStore("profiles", {
+            keyPath: "id",
+            autoIncrement: true
+        });
 
-    medidas.createIndex("profileId", "profileId");
+    }
 
-};
+    if(!db.objectStoreNames.contains("medidas")){
 
-request.onsuccess = async e => {
+        const medidas = db.createObjectStore("medidas", {
+            keyPath: "id",
+            autoIncrement: true
+        });
 
-    db = e.target.result;
-
-    profile = await pegarProfile();
-
-    if(profile){
-
-        iniciarApp();
-
-    }else{
-
-        document.getElementById("setup").classList.remove("hidden");
+        medidas.createIndex("profileId", "profileId", { unique:false });
 
     }
 
 };
 
-// ================================
-// PERFIL
-// ================================
+request.onsuccess = async function(event){
+
+    db = event.target.result;
+
+    try{
+
+        profile = await pegarProfile();
+
+        if(profile){
+
+            iniciarApp();
+
+        }else{
+
+            mostrarSetup();
+
+        }
+
+    }catch(e){
+
+        console.error("Erro ao carregar profile:", e);
+
+    }
+
+};
+
+request.onerror = function(){
+
+    console.error("Erro ao abrir banco");
+
+};
+
+/* =========================
+   PERFIL
+========================= */
 
 function criarPerfil(){
 
-    const nome = document.getElementById("nome").value;
+    const nomeInput = document.getElementById("nome");
+
+    if(!nomeInput || nomeInput.value.trim() === ""){
+
+        alert("Digite seu nome");
+
+        return;
+
+    }
 
     const tx = db.transaction("profiles", "readwrite");
 
     tx.objectStore("profiles").add({
-        nome: nome
+
+        nome: nomeInput.value.trim(),
+        criado: new Date()
+
     });
 
-    tx.oncomplete = () => location.reload();
+    tx.oncomplete = function(){
+
+        location.reload();
+
+    };
 
 }
 
 function pegarProfile(){
 
-    return new Promise(resolve=>{
+    return new Promise(function(resolve){
 
         const tx = db.transaction("profiles", "readonly");
 
         const req = tx.objectStore("profiles").getAll();
 
-        req.onsuccess = () => resolve(req.result[0]);
+        req.onsuccess = function(){
+
+            resolve(req.result[0] || null);
+
+        };
+
+        req.onerror = function(){
+
+            resolve(null);
+
+        };
 
     });
 
 }
 
-// ================================
-// UI
-// ================================
+/* =========================
+   UI
+========================= */
 
 function iniciarApp(){
 
-    document.getElementById("setup").classList.add("hidden");
+    esconder("setup");
 
-    document.getElementById("app").classList.remove("hidden");
+    mostrar("app");
 
-    document.getElementById("nomeUsuario").innerText =
-        "Olá, " + profile.nome;
+    const el = document.getElementById("nomeUsuario");
+
+    if(el && profile){
+
+        el.innerText = "Olá, " + profile.nome;
+
+    }
 
     carregarDashboard();
 
 }
 
+function mostrarSetup(){
+
+    mostrar("setup");
+
+}
+
 function abrirForm(){
 
-    app.classList.add("hidden");
+    esconder("app");
 
-    formTela.classList.remove("hidden");
+    mostrar("formTela");
 
 }
 
 function voltar(){
 
-    formTela.classList.add("hidden");
+    esconder("formTela");
 
-    app.classList.remove("hidden");
+    mostrar("app");
 
 }
 
-// ================================
-// SALVAR MEDIDA
-// ================================
+function mostrar(id){
+
+    const el = document.getElementById(id);
+
+    if(el) el.classList.remove("hidden");
+
+}
+
+function esconder(id){
+
+    const el = document.getElementById(id);
+
+    if(el) el.classList.add("hidden");
+
+}
+
+/* =========================
+   SALVAR MEDIDA
+========================= */
 
 function salvarMedida(){
 
-    const data = {
+    if(!profile) return;
+
+    const dados = {
 
         profileId: profile.id,
+
         data: new Date(),
 
         peso: num("peso"),
@@ -153,201 +233,230 @@ function salvarMedida(){
 
     const tx = db.transaction("medidas", "readwrite");
 
-    tx.objectStore("medidas").add(data);
+    tx.objectStore("medidas").add(dados);
 
-    tx.oncomplete = () => {
+    tx.oncomplete = function(){
 
         voltar();
 
-        setTimeout(()=>{
-            carregarDashboard();
-        },200);
+        setTimeout(carregarDashboard, 200);
 
     };
 
 }
 
-// ================================
-// HELPERS
-// ================================
+/* =========================
+   HELPERS
+========================= */
 
 function num(id){
 
-    const v = document.getElementById(id).value;
+    const el = document.getElementById(id);
 
-    return v ? Number(v) : null;
+    if(!el || el.value === "") return null;
+
+    const v = Number(el.value);
+
+    return isNaN(v) ? null : v;
 
 }
 
 function media(a,b){
 
-    if(!a || !b) return null;
+    if(a == null || b == null) return null;
 
-    return (a+b)/2;
+    return (a + b) / 2;
 
 }
 
-// ================================
-// PEGAR MEDIDAS
-// ================================
+/* =========================
+   PEGAR MEDIDAS
+========================= */
 
 function pegarMedidas(){
 
-    return new Promise(resolve=>{
+    return new Promise(function(resolve){
 
-        const tx = db.transaction("medidas","readonly");
+        if(!profile){
+
+            resolve([]);
+            return;
+
+        }
+
+        const tx = db.transaction("medidas", "readonly");
 
         const index = tx.objectStore("medidas").index("profileId");
 
         const req = index.getAll(profile.id);
 
-        req.onsuccess = ()=> resolve(req.result);
+        req.onsuccess = function(){
+
+            resolve(req.result || []);
+
+        };
+
+        req.onerror = function(){
+
+            resolve([]);
+
+        };
 
     });
 
 }
 
-// ================================
-// DASHBOARD
-// ================================
+/* =========================
+   DASHBOARD
+========================= */
 
 async function carregarDashboard(){
 
     const medidas = await pegarMedidas();
 
-    if(!medidas.length) return;
+    if(!medidas || medidas.length === 0) return;
 
-    medidas.sort((a,b)=> new Date(a.data) - new Date(b.data));
+    medidas.sort(function(a,b){
 
-    const ultimo = medidas[medidas.length-1];
+        return new Date(a.data) - new Date(b.data);
 
-    animarNumero("pesoAtual", ultimo.peso, " kg");
+    });
 
-    const labels = medidas.map(m=>
-        new Date(m.data).toLocaleDateString()
-    );
+    const ultimo = medidas[medidas.length - 1];
 
-    criarGrafico("graficoPeso","Peso",labels,
-        medidas.map(m=>m.peso),"#22c55e");
+    if(ultimo && ultimo.peso != null){
 
-    criarGrafico("graficoGordura","Gordura",labels,
-        medidas.map(m=>m.gordura),"#f97316");
+        animarNumero("pesoAtual", ultimo.peso, " kg");
 
-    criarGrafico("graficoPescoco","Pescoço",labels,
-        medidas.map(m=>m.pescoco),"#84cc16");
+    }
 
-    criarGrafico("graficoOmbro","Ombro",labels,
-        medidas.map(m=>m.ombro),"#ef4444");
+    const labels = medidas.map(function(m){
 
-    criarGrafico("graficoPeito","Peito",labels,
-        medidas.map(m=>m.peito),"#3b82f6");
+        return new Date(m.data).toLocaleDateString();
 
-    criarGrafico("graficoCintura","Cintura",labels,
-        medidas.map(m=>m.cintura),"#0ea5e9");
+    });
 
-    criarGrafico("graficoAbdomen","Abdômen",labels,
-        medidas.map(m=>m.abdomen),"#eab308");
-
-    criarGrafico("graficoQuadril","Quadril",labels,
-        medidas.map(m=>m.quadril),"#a855f7");
-
-    criarGrafico("graficoBracos","Braços",labels,
-        medidas.map(m=>media(m.bracoE,m.bracoD)),"#ec4899");
-
-    criarGrafico("graficoAntebracos","Antebraços",labels,
-        medidas.map(m=>media(m.antebracoE,m.antebracoD)),"#f43f5e");
-
-    criarGrafico("graficoCoxas","Coxas",labels,
-        medidas.map(m=>media(m.coxaE,m.coxaD)),"#6366f1");
-
-    criarGrafico("graficoPanturrilhas","Panturrilhas",labels,
-        medidas.map(m=>media(m.panturrilhaE,m.panturrilhaD)),"#06b6d4");
+    grafico("graficoPeso","Peso",labels,medidas.map(m=>m.peso),"#22c55e");
+    grafico("graficoGordura","Gordura",labels,medidas.map(m=>m.gordura),"#f97316");
+    grafico("graficoPescoco","Pescoço",labels,medidas.map(m=>m.pescoco),"#84cc16");
+    grafico("graficoOmbro","Ombro",labels,medidas.map(m=>m.ombro),"#ef4444");
+    grafico("graficoPeito","Peito",labels,medidas.map(m=>m.peito),"#3b82f6");
+    grafico("graficoCintura","Cintura",labels,medidas.map(m=>m.cintura),"#0ea5e9");
+    grafico("graficoAbdomen","Abdômen",labels,medidas.map(m=>m.abdomen),"#eab308");
+    grafico("graficoQuadril","Quadril",labels,medidas.map(m=>m.quadril),"#a855f7");
+    grafico("graficoBracos","Braços",labels,medidas.map(m=>media(m.bracoE,m.bracoD)),"#ec4899");
+    grafico("graficoAntebracos","Antebraços",labels,medidas.map(m=>media(m.antebracoE,m.antebracoD)),"#f43f5e");
+    grafico("graficoCoxas","Coxas",labels,medidas.map(m=>media(m.coxaE,m.coxaD)),"#6366f1");
+    grafico("graficoPanturrilhas","Panturrilhas",labels,medidas.map(m=>media(m.panturrilhaE,m.panturrilhaD)),"#06b6d4");
 
 }
 
-// ================================
-// GRAFICO ANIMADO
-// ================================
+/* =========================
+   GRAFICOS
+========================= */
 
-function criarGrafico(id,label,labels,data,cor){
+function grafico(id,label,labels,data,cor){
 
-    const ctx = document.getElementById(id);
+    if(typeof Chart === "undefined"){
 
-    if(!ctx) return;
+        console.error("Chart.js não carregado");
+        return;
+
+    }
+
+    const canvas = document.getElementById(id);
+
+    if(!canvas) return;
 
     if(charts[id]) charts[id].destroy();
 
-    charts[id] = new Chart(ctx,{
+    charts[id] = new Chart(canvas,{
 
         type:"line",
 
         data:{
-            labels,
+
+            labels:labels,
+
             datasets:[{
-                label,
-                data,
+
+                label:label,
+
+                data:data,
+
                 borderColor:cor,
+
                 backgroundColor:cor+"33",
-                fill:true,
-                tension:0.4
+
+                tension:0.4,
+
+                fill:true
+
             }]
+
         },
 
         options:{
-            animation:{
-                duration:1200,
-                easing:"easeOutQuart"
-            },
+
+            animation:{ duration:1200 },
+
+            responsive:true,
+
             plugins:{
-                legend:{
-                    labels:{color:"#e2e8f0"}
-                }
+
+                legend:{ labels:{ color:"#e2e8f0" } }
+
             },
+
             scales:{
-                x:{ticks:{color:"#94a3b8"}},
-                y:{ticks:{color:"#94a3b8"}}
+
+                x:{ ticks:{ color:"#94a3b8" } },
+
+                y:{ ticks:{ color:"#94a3b8" } }
+
             }
+
         }
 
     });
 
 }
 
-// ================================
-// ANIMAR NUMERO
-// ================================
+/* =========================
+   ANIMAR NUMERO
+========================= */
 
-function animarNumero(id,valor,sufixo=""){
+function animarNumero(id,valor,sufixo){
 
-    const el=document.getElementById(id);
+    const el = document.getElementById(id);
 
-    let atual=0;
+    if(!el || valor == null) return;
 
-    const duracao=800;
+    let atual = 0;
 
-    const passos=30;
+    const passos = 30;
 
-    const incremento=valor/passos;
+    const incremento = valor / passos;
 
-    let i=0;
+    let i = 0;
 
-    const intervalo=setInterval(()=>{
+    const timer = setInterval(function(){
 
-        atual+=incremento;
+        atual += incremento;
 
-        el.innerText=atual.toFixed(1)+sufixo;
+        el.innerText = atual.toFixed(1) + sufixo;
 
         i++;
 
-        if(i>=passos){
+        if(i >= passos){
 
-            el.innerText=valor+sufixo;
+            el.innerText = valor + sufixo;
 
-            clearInterval(intervalo);
+            clearInterval(timer);
 
         }
 
-    },duracao/passos);
+    },25);
 
 }
 ```

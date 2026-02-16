@@ -1,129 +1,200 @@
 ```css
+/* =========================
+   BODYTRACK PRO STYLE 4.0
+   ========================= */
+
 :root{
 
---bg:#0f172a;
---card:#1e293b;
---primary:#22c55e;
---text:#e2e8f0;
---muted:#94a3b8;
+--bg-primary:#020617;
+--bg-secondary:#0f172a;
+--card-bg:rgba(30,41,59,0.6);
 
+--primary:#22c55e;
+--primary-soft:rgba(34,197,94,0.15);
+
+--text:#e2e8f0;
+--text-muted:#94a3b8;
+
+--border:rgba(148,163,184,0.15);
+
+--radius:14px;
+
+--shadow:
+0 4px 20px rgba(0,0,0,0.4);
+
+}
+
+/* =========================
+   BASE
+   ========================= */
+
+*{
+box-sizing:border-box;
 }
 
 body{
 
 margin:0;
-font-family:system-ui;
-background:var(--bg);
+
+font-family:
+
+system-ui,
+-apple-system,
+Segoe UI,
+Roboto,
+Ubuntu,
+sans-serif;
+
+background:
+
+linear-gradient(
+180deg,
+#020617 0%,
+#0f172a 100%
+);
+
 color:var(--text);
 
+min-height:100vh;
+
 }
+
+/* =========================
+   HEADER
+   ========================= */
 
 .header{
 
 display:flex;
+
 justify-content:space-between;
+
 align-items:center;
+
 padding:16px;
-background:#020617;
-border-bottom:1px solid #1e293b;
+
+background:rgba(2,6,23,0.7);
+
+backdrop-filter:blur(10px);
+
+border-bottom:1px solid var(--border);
+
+position:sticky;
+
+top:0;
+
+z-index:10;
 
 }
 
 .logo{
 
 font-size:20px;
+
 font-weight:bold;
+
 color:var(--primary);
 
+letter-spacing:0.5px;
+
 }
+
+/* =========================
+   CONTAINER
+   ========================= */
 
 .container{
 
 padding:16px;
 
+max-width:1200px;
+
+margin:auto;
+
 }
+
+/* =========================
+   CARDS
+   ========================= */
 
 .card{
 
-background:var(--card);
+background:var(--card-bg);
+
+backdrop-filter:blur(12px);
+
+border-radius:var(--radius);
+
 padding:16px;
-border-radius:12px;
+
 margin-bottom:16px;
 
-box-shadow:
-0 4px 12px rgba(0,0,0,0.3);
+border:1px solid var(--border);
+
+box-shadow:var(--shadow);
+
+transition:0.25s;
 
 }
+
+.card:hover{
+
+transform:translateY(-3px);
+
+box-shadow:
+0 10px 30px rgba(0,0,0,0.6);
+
+}
+
+/* =========================
+   DASHBOARD DESTAQUE
+   ========================= */
 
 .destaque{
 
 text-align:center;
 
+background:
+
+linear-gradient(
+145deg,
+rgba(34,197,94,0.15),
+rgba(34,197,94,0.05)
+);
+
+border:1px solid rgba(34,197,94,0.3);
+
 }
 
 .peso{
 
-font-size:32px;
+font-size:36px;
+
 font-weight:bold;
+
 color:var(--primary);
 
-}
-
-input{
-
-width:100%;
-padding:12px;
 margin-top:8px;
 
-border:none;
-border-radius:8px;
-
-background:#020617;
-color:white;
+animation:fadeIn 0.6s;
 
 }
 
-button{
-
-width:100%;
-padding:12px;
-margin-top:12px;
-
-border:none;
-border-radius:8px;
-
-background:var(--primary);
-color:black;
-
-font-weight:bold;
-
-cursor:pointer;
-
-transition:0.2s;
-
-}
-
-button:hover{
-
-transform:scale(1.02);
-
-}
-
-.btn-primary{
-
-margin-top:10px;
-
-}
+/* =========================
+   GRID
+   ========================= */
 
 .grid{
 
 display:grid;
+
 grid-template-columns:1fr;
+
 gap:16px;
 
 }
 
-@media(min-width:768px){
+@media(min-width:700px){
 
 .grid{
 
@@ -133,9 +204,193 @@ grid-template-columns:1fr 1fr;
 
 }
 
+@media(min-width:1100px){
+
+.grid{
+
+grid-template-columns:1fr 1fr 1fr;
+
+}
+
+}
+
+/* =========================
+   INPUTS
+   ========================= */
+
+input{
+
+width:100%;
+
+padding:12px;
+
+margin-top:8px;
+
+border-radius:10px;
+
+border:1px solid var(--border);
+
+background:rgba(2,6,23,0.6);
+
+color:var(--text);
+
+outline:none;
+
+transition:0.2s;
+
+}
+
+input:focus{
+
+border-color:var(--primary);
+
+box-shadow:
+
+0 0 0 2px var(--primary-soft);
+
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+
+button{
+
+width:100%;
+
+padding:12px;
+
+margin-top:12px;
+
+border:none;
+
+border-radius:10px;
+
+background:
+
+linear-gradient(
+145deg,
+#22c55e,
+#16a34a
+);
+
+color:white;
+
+font-weight:bold;
+
+cursor:pointer;
+
+transition:0.2s;
+
+box-shadow:
+0 4px 14px rgba(34,197,94,0.3);
+
+}
+
+button:hover{
+
+transform:scale(1.02);
+
+box-shadow:
+0 6px 20px rgba(34,197,94,0.5);
+
+}
+
+button:active{
+
+transform:scale(0.98);
+
+}
+
+/* =========================
+   TITLES
+   ========================= */
+
+h2, h3{
+
+margin:0 0 8px 0;
+
+font-weight:600;
+
+color:var(--text);
+
+}
+
+/* =========================
+   CANVAS GRAFICOS
+   ========================= */
+
+canvas{
+
+width:100% !important;
+
+height:220px !important;
+
+margin-top:10px;
+
+animation:fadeIn 0.8s;
+
+}
+
+/* =========================
+   UTIL
+   ========================= */
+
 .hidden{
 
 display:none;
+
+}
+
+/* =========================
+   ANIMATIONS
+   ========================= */
+
+@keyframes fadeIn{
+
+from{
+
+opacity:0;
+transform:translateY(10px);
+
+}
+
+to{
+
+opacity:1;
+transform:translateY(0);
+
+}
+
+}
+
+/* =========================
+   SCROLLBAR
+   ========================= */
+
+::-webkit-scrollbar{
+
+width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+background:#020617;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+background:#1e293b;
+
+border-radius:10px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+background:#334155;
 
 }
 ```

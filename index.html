@@ -1,122 +1,91 @@
 ```html
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BodyTrack</title>
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-<meta name="theme-color" content="#00c853">
+<title>BodyTrack Pro</title>
 
-<link rel="manifest" href="manifest.json">
+<meta name="theme-color"
+content="#0f172a">
+
+<link rel="manifest"
+href="manifest.json">
+
+<link rel="stylesheet"
+href="style.css">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-background:#121212;
-color:white;
-}
-
-.header{
-background:#00c853;
-padding:15px;
-font-size:22px;
-font-weight:bold;
-}
-
-.container{
-padding:15px;
-}
-
-.card{
-background:#1e1e1e;
-padding:15px;
-border-radius:12px;
-margin-bottom:15px;
-}
-
-button{
-width:100%;
-padding:14px;
-margin-top:10px;
-border:none;
-border-radius:8px;
-background:#00c853;
-color:white;
-font-size:16px;
-}
-
-input, select{
-width:100%;
-padding:12px;
-margin-top:8px;
-border:none;
-border-radius:8px;
-font-size:16px;
-}
-
-.item{
-background:#2a2a2a;
-padding:10px;
-margin-top:10px;
-border-radius:8px;
-}
-
-.hidden{
-display:none;
-}
-
-.center{
-text-align:center;
-}
-
-.big{
-font-size:28px;
-font-weight:bold;
-}
-
-</style>
-
 </head>
+
 <body>
 
-<div class="header">
-BodyTrack
+<header class="header">
+
+<div class="logo">
+BodyTrack Pro
 </div>
 
-<div id="setup" class="container hidden">
+<div id="nomeUsuario"></div>
+
+</header>
+
+<!-- SETUP PERFIL -->
+
+<div id="setup"
+class="container hidden">
 
 <div class="card">
 
 <h2>Criar Perfil</h2>
 
-<input id="nome" placeholder="Digite seu nome">
+<input id="nome"
+placeholder="Digite seu nome">
 
 <button onclick="criarPerfil()">
+
 Criar Perfil
+
 </button>
 
 </div>
 
 </div>
 
-<div id="app" class="container hidden">
+<!-- APP -->
 
-<div class="card center">
+<div id="app"
+class="container hidden">
 
-<div id="nomeUsuario"></div>
+<div class="card destaque">
 
-<div id="pesoAtual" class="big">- kg</div>
+<div>Peso Atual</div>
 
-Peso atual
+<div id="pesoAtual"
+class="peso">
+
+-
 
 </div>
+
+</div>
+
+<button class="btn-primary"
+onclick="abrirForm()">
+
++ Nova Medida
+
+</button>
+
+<!-- GRAFICOS -->
+
+<div class="grid">
 
 <div class="card">
 <h3>Peso</h3>
@@ -129,374 +98,159 @@ Peso atual
 </div>
 
 <div class="card">
+<h3>Pescoço</h3>
+<canvas id="graficoPescoco"></canvas>
+</div>
+
+<div class="card">
+<h3>Ombro</h3>
+<canvas id="graficoOmbro"></canvas>
+</div>
+
+<div class="card">
+<h3>Peito</h3>
+<canvas id="graficoPeito"></canvas>
+</div>
+
+<div class="card">
 <h3>Cintura</h3>
 <canvas id="graficoCintura"></canvas>
 </div>
 
 <div class="card">
-<h3>Braço</h3>
-<canvas id="graficoBraco"></canvas>
+<h3>Abdômen</h3>
+<canvas id="graficoAbdomen"></canvas>
 </div>
 
 <div class="card">
-<h3>Perna (Coxa)</h3>
-<canvas id="graficoPerna"></canvas>
-</div>
-
-<div class="card">
-<h3>Bunda (Quadril)</h3>
+<h3>Quadril</h3>
 <canvas id="graficoQuadril"></canvas>
 </div>
 
-<button onclick="abrirForm()">+ Nova Medida</button>
+<div class="card">
+<h3>Braços</h3>
+<canvas id="graficoBracos"></canvas>
+</div>
 
 <div class="card">
+<h3>Antebraços</h3>
+<canvas id="graficoAntebracos"></canvas>
+</div>
 
-<h3>Comparar medidas</h3>
+<div class="card">
+<h3>Coxas</h3>
+<canvas id="graficoCoxas"></canvas>
+</div>
 
-<select id="dataInicial"></select>
-
-<select id="dataFinal"></select>
-
-<button onclick="compararMedidas()">Comparar</button>
-
-<div id="resultadoComparacao"></div>
+<div class="card">
+<h3>Panturrilhas</h3>
+<canvas id="graficoPanturrilhas"></canvas>
+</div>
 
 </div>
 
-<div id="historico"></div>
-
 </div>
 
-<div id="formTela" class="container hidden">
+<!-- FORM -->
+
+<div id="formTela"
+class="container hidden">
 
 <div class="card">
 
 <h2>Nova Medida</h2>
 
-<input id="peso" placeholder="Peso (kg)" type="number">
+<input id="peso"
+type="number"
+placeholder="Peso (kg)">
 
-<input id="gordura" placeholder="Gordura (%)" type="number">
+<input id="gordura"
+type="number"
+placeholder="Gordura (%)">
 
-<input id="cintura" placeholder="Cintura (cm)" type="number">
+<input id="pescoco"
+type="number"
+placeholder="Pescoço (cm)">
 
-<input id="quadril" placeholder="Quadril (cm)" type="number">
+<input id="ombro"
+type="number"
+placeholder="Ombro (cm)">
 
-<input id="bracoE" placeholder="Braço esquerdo (cm)" type="number">
+<input id="peito"
+type="number"
+placeholder="Peito (cm)">
 
-<input id="bracoD" placeholder="Braço direito (cm)" type="number">
+<input id="cintura"
+type="number"
+placeholder="Cintura (cm)">
 
-<input id="coxaE" placeholder="Coxa esquerda (cm)" type="number">
+<input id="abdomen"
+type="number"
+placeholder="Abdômen (cm)">
 
-<input id="coxaD" placeholder="Coxa direita (cm)" type="number">
+<input id="quadril"
+type="number"
+placeholder="Quadril (cm)">
 
-<button onclick="salvarMedida()">Salvar</button>
+<input id="bracoE"
+type="number"
+placeholder="Braço esquerdo (cm)">
 
-<button onclick="voltar()">Cancelar</button>
+<input id="bracoD"
+type="number"
+placeholder="Braço direito (cm)">
+
+<input id="antebracoE"
+type="number"
+placeholder="Antebraço esquerdo (cm)">
+
+<input id="antebracoD"
+type="number"
+placeholder="Antebraço direito (cm)">
+
+<input id="coxaE"
+type="number"
+placeholder="Coxa esquerda (cm)">
+
+<input id="coxaD"
+type="number"
+placeholder="Coxa direita (cm)">
+
+<input id="panturrilhaE"
+type="number"
+placeholder="Panturrilha esquerda (cm)">
+
+<input id="panturrilhaD"
+type="number"
+placeholder="Panturrilha direita (cm)">
+
+<button onclick="salvarMedida()">
+Salvar Medida
+</button>
+
+<button onclick="voltar()">
+Cancelar
+</button>
 
 </div>
 
 </div>
+
+<!-- SCRIPT -->
+
+<script src="app.js"></script>
 
 <script>
 
 if("serviceWorker" in navigator){
+
 navigator.serviceWorker.register("service-worker.js");
-}
-
-let db;
-let profile;
-let charts={};
-
-let request=indexedDB.open("bodytrack",1);
-
-request.onupgradeneeded=e=>{
-
-db=e.target.result;
-
-db.createObjectStore("profiles",{keyPath:"id",autoIncrement:true});
-
-let medidas=db.createObjectStore("medidas",{keyPath:"id",autoIncrement:true});
-
-medidas.createIndex("profileId","profileId",{unique:false});
-
-};
-
-request.onsuccess=async e=>{
-
-db=e.target.result;
-
-profile=await pegarProfile();
-
-if(profile) iniciarApp();
-else setup.classList.remove("hidden");
-
-};
-
-function criarPerfil(){
-
-let tx=db.transaction("profiles","readwrite");
-
-tx.objectStore("profiles").add({
-
-nome:nome.value
-
-});
-
-tx.oncomplete=()=>location.reload();
-
-}
-
-function pegarProfile(){
-
-return new Promise(resolve=>{
-
-let tx=db.transaction("profiles","readonly");
-
-let req=tx.objectStore("profiles").getAll();
-
-req.onsuccess=()=>resolve(req.result[0]);
-
-});
-
-}
-
-function iniciarApp(){
-
-setup.classList.add("hidden");
-
-app.classList.remove("hidden");
-
-nomeUsuario.innerText="Olá, "+profile.nome;
-
-carregarDashboard();
-
-}
-
-function abrirForm(){
-
-app.classList.add("hidden");
-
-formTela.classList.remove("hidden");
-
-}
-
-function voltar(){
-
-formTela.classList.add("hidden");
-
-app.classList.remove("hidden");
-
-}
-
-function salvarMedida(){
-
-let tx=db.transaction("medidas","readwrite");
-
-tx.objectStore("medidas").add({
-
-profileId:profile.id,
-data:new Date(),
-
-peso:Number(peso.value),
-gordura:Number(gordura.value),
-cintura:Number(cintura.value),
-quadril:Number(quadril.value),
-
-bracoE:Number(bracoE.value),
-bracoD:Number(bracoD.value),
-
-coxaE:Number(coxaE.value),
-coxaD:Number(coxaD.value)
-
-});
-
-tx.oncomplete=()=>{
-
-voltar();
-carregarDashboard();
-
-};
-
-}
-
-function pegarMedidas(){
-
-return new Promise(resolve=>{
-
-let tx=db.transaction("medidas","readonly");
-
-let index=tx.objectStore("medidas").index("profileId");
-
-let req=index.getAll(profile.id);
-
-req.onsuccess=()=>resolve(req.result);
-
-});
-
-}
-
-function criarGrafico(id,label,labels,data,cor){
-
-if(charts[id]) charts[id].destroy();
-
-charts[id]=new Chart(document.getElementById(id),{
-
-type:"line",
-
-data:{
-labels,
-datasets:[{
-label,
-data,
-borderColor:cor,
-backgroundColor:cor+"33",
-fill:true
-}]
-},
-
-options:{
-plugins:{legend:{labels:{color:"white"}}},
-scales:{
-x:{ticks:{color:"white"}},
-y:{ticks:{color:"white"}}
-}
-}
-
-});
-
-}
-
-async function carregarDashboard(){
-
-let medidas=await pegarMedidas();
-
-if(medidas.length==0) return;
-
-medidas.sort((a,b)=>new Date(a.data)-new Date(b.data));
-
-let ultimo=medidas[medidas.length-1];
-
-pesoAtual.innerText=ultimo.peso+" kg";
-
-let labels=medidas.map(m=>new Date(m.data).toLocaleDateString());
-
-criarGrafico("graficoPeso","Peso",labels,medidas.map(m=>m.peso),"#00c853");
-
-criarGrafico("graficoGordura","Gordura",labels,medidas.map(m=>m.gordura),"#ff9800");
-
-criarGrafico("graficoCintura","Cintura",labels,medidas.map(m=>m.cintura),"#2196f3");
-
-criarGrafico("graficoBraco","Braço",labels,
-medidas.map(m=>((m.bracoE||0)+(m.bracoD||0))/2),"#e91e63");
-
-criarGrafico("graficoPerna","Coxa",labels,
-medidas.map(m=>((m.coxaE||0)+(m.coxaD||0))/2),"#9c27b0");
-
-criarGrafico("graficoQuadril","Quadril",labels,
-medidas.map(m=>m.quadril),"#00bcd4");
-
-renderHistorico(medidas);
-
-carregarDatasComparacao(medidas);
-
-}
-
-function renderHistorico(medidas){
-
-historico.innerHTML="";
-
-medidas.slice().reverse().forEach(m=>{
-
-historico.innerHTML+=`
-
-<div class="item">
-
-${new Date(m.data).toLocaleDateString()}<br>
-
-Peso: ${m.peso} kg<br>
-Cintura: ${m.cintura} cm<br>
-Quadril: ${m.quadril} cm
-
-</div>
-
-`;
-
-});
-
-}
-
-function carregarDatasComparacao(medidas){
-
-dataInicial.innerHTML="";
-dataFinal.innerHTML="";
-
-medidas.forEach((m,i)=>{
-
-let data=new Date(m.data).toLocaleDateString();
-
-dataInicial.innerHTML+=`<option value="${i}">${data}</option>`;
-
-dataFinal.innerHTML+=`<option value="${i}">${data}</option>`;
-
-});
-
-}
-
-function compararMedidas(){
-
-let medidas;
-
-pegarMedidas().then(m=>{
-
-medidas=m;
-
-let inicial=medidas[dataInicial.value];
-let final=medidas[dataFinal.value];
-
-resultadoComparacao.innerHTML=
-
-linha("Peso",inicial.peso,final.peso,"kg")+
-linha("Cintura",inicial.cintura,final.cintura,"cm")+
-linha("Quadril",inicial.quadril,final.quadril,"cm");
-
-});
-
-}
-
-function linha(nome,a,b,u){
-
-let diff=b-a;
-
-let perc=((diff/a)*100).toFixed(1);
-
-let cor=diff<0?"#00c853":"#ff5252";
-
-let sinal=diff>0?"+":"";
-
-return`
-
-<div class="item">
-
-<b>${nome}</b><br>
-
-${a} → ${b}<br>
-
-<span style="color:${cor}">
-
-${sinal}${diff.toFixed(1)} ${u}
-(${sinal}${perc}%)
-
-</span>
-
-</div>
-
-`;
 
 }
 
 </script>
 
 </body>
+
 </html>
 ```

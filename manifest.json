@@ -1,12 +1,11 @@
 {
-  "name": "BodyTrack - Acompanhamento Corporal",
+  "name": "BodyTrack Pro",
   "short_name": "BodyTrack",
-  "description": "App para acompanhamento de medidas corporais e emagrecimento",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#00c853",
-  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#22c55e",
+
   "icons": [
     {
       "src": "icons/icon-192.png",

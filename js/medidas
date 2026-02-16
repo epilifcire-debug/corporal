@@ -1,0 +1,64 @@
+async function salvarMedida(){
+
+let peso = document.getElementById("peso").value;
+let cintura = document.getElementById("cintura").value;
+let gordura = document.getElementById("gordura").value;
+
+await salvarMedidaDB({
+
+profileId:profile.id,
+data:new Date(),
+peso:Number(peso),
+cintura:Number(cintura),
+gordura:Number(gordura)
+
+});
+
+voltar();
+
+carregarDashboard();
+
+}
+
+async function carregarDashboard(){
+
+let medidas = await pegarMedidas(profile.id);
+
+if(medidas.length==0) return;
+
+medidas.sort((a,b)=> new Date(a.data)-new Date(b.data));
+
+let ultimo = medidas[medidas.length-1];
+
+document.getElementById("pesoAtual").innerText =
+ultimo.peso+" kg";
+
+renderGrafico(medidas);
+
+renderHistorico(medidas);
+
+}
+
+function renderHistorico(medidas){
+
+let div = document.getElementById("historico");
+
+div.innerHTML="";
+
+medidas.reverse().forEach(m=>{
+
+div.innerHTML+=`
+
+<div class="item">
+
+Data: ${new Date(m.data).toLocaleDateString()} <br>
+Peso: ${m.peso} kg<br>
+Cintura: ${m.cintura} cm
+
+</div>
+
+`;
+
+});
+
+}

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BodyTrack</title>
+
+<meta name="theme-color" content="#00c853">
+
+<link rel="manifest" href="manifest.json">
+
+<link rel="icon" href="icons/icon-192.png">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#121212;
+    color:white;
+}
+
+.header{
+    background:#00c853;
+    padding:15px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.container{
+    padding:15px;
+}
+
+.card{
+    background:#1e1e1e;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    background:#00c853;
+    color:white;
+    font-size:16px;
+    margin-top:10px;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    margin-top:10px;
+    font-size:16px;
+}
+
+.item{
+    background:#1e1e1e;
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+.hidden{
+    display:none;
+}
+
+.center{
+    text-align:center;
+}
+
+.big{
+    font-size:28px;
+    font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+BodyTrack
+</div>
+
+<!-- SETUP -->
+
+<div id="setup" class="container hidden">
+
+<div class="card">
+
+<h2>Bem-vindo</h2>
+
+<input id="nome" placeholder="Digite seu nome">
+
+<button onclick="criarPerfil()">
+Criar Perfil
+</button>
+
+</div>
+
+</div>
+
+<!-- APP -->
+
+<div id="app" class="container hidden">
+
+<div class="card center">
+
+<div id="nomeUsuario"></div>
+
+<div class="big" id="pesoAtual">- kg</div>
+
+<div>Peso atual</div>
+
+</div>
+
+<div class="card">
+
+<canvas id="graficoPeso"></canvas>
+
+</div>
+
+<button onclick="abrirForm()">
++ Nova Medida
+</button>
+
+<div id="historico"></div>
+
+</div>
+
+<!-- FORM -->
+
+<div id="formTela" class="container hidden">
+
+<div class="card">
+
+<h2>Nova Medida</h2>
+
+<input id="peso" placeholder="Peso (kg)" type="number">
+
+<input id="cintura" placeholder="Cintura (cm)" type="number">
+
+<input id="gordura" placeholder="Gordura (%)" type="number">
+
+<button onclick="salvarMedida()">
+Salvar
+</button>
+
+<button onclick="voltar()">
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* --------------------------
+SERVICE WORKER
+-------------------------- */
+
+if("serviceWorker" in navigator){
+
+navigator.serviceWorker.register("service-worker.js")
+
+}
+
+/* --------------------------
+DATABASE
+-------------------------- */
+
+let db;
+let profile;
+let chart;
+
+let request = indexedDB.open("bodytrack",1);
+
+request.onupgradeneeded = e => {
+
+db = e.target.result;
+
+db.createObjectStore("profiles",{keyPath:"id",autoIncrement:true});
+
+let medidas = db.createObjectStore("medidas",{keyPath:"id",autoIncrement:true});
+
+medidas.createIndex("profileId","profileId",{unique:false});
+
+};
+
+request.onsuccess = async e => {
+
+db = e.target.result;
+
+profile = await pegarProfile();
+
+if(profile){
+
+mostrarApp();
+
+}else{
+
+mostrarSetup();
+
+}
+
+};
+
+/* --------------------------
+PROFILE
+-------------------------- */
+
+function criarPerfil(){
+
+let nome = document.getElementById("nome").value;
+
+let tx = db.transaction("profiles","readwrite");
+
+tx.objectStore("profiles").add({
+
+nome:nome,
+data:new Date()
+
+});
+
+tx.oncomplete = ()=>location.reload();
+
+}
+
+function pegarProfile(){
+
+return new Promise(resolve=>{
+
+let tx = db.transaction("profiles","readonly");
+
+let req = tx.objectStore("profiles").getAll();
+
+req.onsuccess = ()=>resolve(req.result[0]);
+
+});
+
+}
+
+/* --------------------------
+MEDIDAS
+-------------------------- */
+
+function salvarMedida(){
+
+let peso = Number(document.getElementById("peso").value);
+
+let cintura = Number(document.getElementById("cintura").value);
+
+let gordura = Number(document.getElementById("gordura").value);
+
+let tx = db.transaction("medidas","readwrite");
+
+tx.objectStore("medidas").add({
+
+profileId:profile.id,
+data:new Date(),
+peso:peso,
+cintura:cintura,
+gordura:gordura
+
+});
+
+tx.oncomplete = ()=>{
+
+voltar();
+carregarDashboard();
+
+};
+
+}
+
+function pegarMedidas(){
+
+return new Promise(resolve=>{
+
+let tx = db.transaction("medidas","readonly");
+
+let index = tx.objectStore("medidas").index("profileId");
+
+let req = index.getAll(profile.id);
+
+req.onsuccess = ()=>resolve(req.result);
+
+});
+
+}
+
+/* --------------------------
+UI
+-------------------------- */
+
+function mostrarSetup(){
+
+setup.classList.remove("hidden");
+
+}
+
+function mostrarApp(){
+
+setup.classList.add("hidden");
+
+app.classList.remove("hidden");
+
+nomeUsuario.innerText = "Olá, "+profile.nome;
+
+carregarDashboard();
+
+}
+
+function abrirForm(){
+
+app.classList.add("hidden");
+
+formTela.classList.remove("hidden");
+
+}
+
+function voltar(){
+
+formTela.classList.add("hidden");
+
+app.classList.remove("hidden");
+
+}
+
+/* --------------------------
+DASHBOARD
+-------------------------- */
+
+async function carregarDashboard(){
+
+let medidas = await pegarMedidas();
+
+if(medidas.length==0) return;
+
+medidas.sort((a,b)=> new Date(a.data)-new Date(b.data));
+
+let ultimo = medidas[medidas.length-1];
+
+pesoAtual.innerText = ultimo.peso+" kg";
+
+renderGrafico(medidas);
+
+renderHistorico(medidas);
+
+}
+
+/* --------------------------
+GRAFICO
+-------------------------- */
+
+function renderGrafico(medidas){
+
+let ctx = document.getElementById("graficoPeso");
+
+let labels = medidas.map(m=>
+new Date(m.data).toLocaleDateString()
+);
+
+let data = medidas.map(m=>m.peso);
+
+if(chart) chart.destroy();
+
+chart = new Chart(ctx,{
+
+type:"line",
+
+data:{
+labels:labels,
+datasets:[{
+label:"Peso",
+data:data,
+borderColor:"#00c853",
+backgroundColor:"rgba(0,200,83,0.2)"
+}]
+},
+
+options:{
+plugins:{
+legend:{
+labels:{color:"white"}
+}
+},
+scales:{
+x:{ticks:{color:"white"}},
+y:{ticks:{color:"white"}}
+}
+}
+
+});
+
+}
+
+/* --------------------------
+HISTORICO
+-------------------------- */
+
+function renderHistorico(medidas){
+
+historico.innerHTML="";
+
+medidas.reverse().forEach(m=>{
+
+historico.innerHTML += `
+
+<div class="item">
+
+${new Date(m.data).toLocaleDateString()}<br>
+Peso: ${m.peso} kg<br>
+Cintura: ${m.cintura} cm<br>
+Gordura: ${m.gordura} %
+
+</div>
+
+`;
+
+});
+
+}
+
+</script>
+
+</body>
+</html>

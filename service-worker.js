@@ -1,20 +1,15 @@
-const CACHE_NAME = "bodytrack-v1";
+const CACHE = "bodytrack-v1";
 
-const urlsToCache = [
+const FILES = [
 
-"/",
-"/index.html",
+"./",
+"./index.html",
+"./app.js",
+"./style.css",
+"./manifest.json",
 
-"/css/style.css",
-
-"/js/app.js",
-"/js/db.js",
-"/js/medidas.js",
-"/js/charts.js",
-
-"/manifest.json",
-
-"https://cdn.jsdelivr.net/npm/chart.js"
+"./icons/icon-192.png",
+"./icons/icon-512.png"
 
 ];
 
@@ -22,8 +17,9 @@ self.addEventListener("install", event => {
 
 event.waitUntil(
 
-caches.open(CACHE_NAME)
-.then(cache => cache.addAll(urlsToCache))
+caches.open(CACHE)
+.then(cache => cache.addAll(FILES))
+.catch(err => console.log("Cache error:", err))
 
 );
 
@@ -34,11 +30,7 @@ self.addEventListener("fetch", event => {
 event.respondWith(
 
 caches.match(event.request)
-.then(response => {
-
-return response || fetch(event.request);
-
-})
+.then(response => response || fetch(event.request))
 
 );
 

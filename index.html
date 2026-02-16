@@ -1,6 +1,6 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
 
 <meta charset="UTF-8">
@@ -12,94 +12,89 @@
 
 <link rel="manifest" href="manifest.json">
 
-<link rel="icon" href="icons/icon-192.png">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 body{
-    margin:0;
-    font-family:Arial;
-    background:#121212;
-    color:white;
+margin:0;
+font-family:Arial;
+background:#121212;
+color:white;
 }
 
 .header{
-    background:#00c853;
-    padding:15px;
-    font-size:20px;
-    font-weight:bold;
+background:#00c853;
+padding:15px;
+font-size:22px;
+font-weight:bold;
 }
 
 .container{
-    padding:15px;
+padding:15px;
 }
 
 .card{
-    background:#1e1e1e;
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:15px;
+background:#1e1e1e;
+padding:15px;
+border-radius:12px;
+margin-bottom:15px;
 }
 
 button{
-    width:100%;
-    padding:15px;
-    border:none;
-    border-radius:10px;
-    background:#00c853;
-    color:white;
-    font-size:16px;
-    margin-top:10px;
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+background:#00c853;
+color:white;
+font-size:16px;
 }
 
-input{
-    width:100%;
-    padding:15px;
-    border:none;
-    border-radius:10px;
-    margin-top:10px;
-    font-size:16px;
+input, select{
+width:100%;
+padding:12px;
+margin-top:8px;
+border:none;
+border-radius:8px;
+font-size:16px;
 }
 
 .item{
-    background:#1e1e1e;
-    padding:12px;
-    border-radius:10px;
-    margin-top:10px;
+background:#2a2a2a;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
 }
 
 .hidden{
-    display:none;
+display:none;
 }
 
 .center{
-    text-align:center;
+text-align:center;
 }
 
 .big{
-    font-size:28px;
-    font-weight:bold;
+font-size:28px;
+font-weight:bold;
 }
 
 </style>
 
 </head>
-
 <body>
 
 <div class="header">
 BodyTrack
 </div>
 
-<!-- SETUP -->
-
 <div id="setup" class="container hidden">
 
 <div class="card">
 
-<h2>Bem-vindo</h2>
+<h2>Criar Perfil</h2>
 
 <input id="nome" placeholder="Digite seu nome">
 
@@ -111,35 +106,67 @@ Criar Perfil
 
 </div>
 
-<!-- APP -->
-
 <div id="app" class="container hidden">
 
 <div class="card center">
 
 <div id="nomeUsuario"></div>
 
-<div class="big" id="pesoAtual">- kg</div>
+<div id="pesoAtual" class="big">- kg</div>
 
-<div>Peso atual</div>
+Peso atual
 
 </div>
 
 <div class="card">
-
+<h3>Peso</h3>
 <canvas id="graficoPeso"></canvas>
-
 </div>
 
-<button onclick="abrirForm()">
-+ Nova Medida
-</button>
+<div class="card">
+<h3>Gordura</h3>
+<canvas id="graficoGordura"></canvas>
+</div>
+
+<div class="card">
+<h3>Cintura</h3>
+<canvas id="graficoCintura"></canvas>
+</div>
+
+<div class="card">
+<h3>Braço</h3>
+<canvas id="graficoBraco"></canvas>
+</div>
+
+<div class="card">
+<h3>Perna (Coxa)</h3>
+<canvas id="graficoPerna"></canvas>
+</div>
+
+<div class="card">
+<h3>Bunda (Quadril)</h3>
+<canvas id="graficoQuadril"></canvas>
+</div>
+
+<button onclick="abrirForm()">+ Nova Medida</button>
+
+<div class="card">
+
+<h3>Comparar medidas</h3>
+
+<select id="dataInicial"></select>
+
+<select id="dataFinal"></select>
+
+<button onclick="compararMedidas()">Comparar</button>
+
+<div id="resultadoComparacao"></div>
+
+</div>
 
 <div id="historico"></div>
 
 </div>
-
-<!-- FORM -->
 
 <div id="formTela" class="container hidden">
 
@@ -149,17 +176,23 @@ Criar Perfil
 
 <input id="peso" placeholder="Peso (kg)" type="number">
 
-<input id="cintura" placeholder="Cintura (cm)" type="number">
-
 <input id="gordura" placeholder="Gordura (%)" type="number">
 
-<button onclick="salvarMedida()">
-Salvar
-</button>
+<input id="cintura" placeholder="Cintura (cm)" type="number">
 
-<button onclick="voltar()">
-Cancelar
-</button>
+<input id="quadril" placeholder="Quadril (cm)" type="number">
+
+<input id="bracoE" placeholder="Braço esquerdo (cm)" type="number">
+
+<input id="bracoD" placeholder="Braço direito (cm)" type="number">
+
+<input id="coxaE" placeholder="Coxa esquerda (cm)" type="number">
+
+<input id="coxaD" placeholder="Coxa direita (cm)" type="number">
+
+<button onclick="salvarMedida()">Salvar</button>
+
+<button onclick="voltar()">Cancelar</button>
 
 </div>
 
@@ -167,74 +200,50 @@ Cancelar
 
 <script>
 
-/* --------------------------
-SERVICE WORKER
--------------------------- */
-
 if("serviceWorker" in navigator){
-
-navigator.serviceWorker.register("service-worker.js")
-
+navigator.serviceWorker.register("service-worker.js");
 }
-
-/* --------------------------
-DATABASE
--------------------------- */
 
 let db;
 let profile;
-let chart;
+let charts={};
 
-let request = indexedDB.open("bodytrack",1);
+let request=indexedDB.open("bodytrack",1);
 
-request.onupgradeneeded = e => {
+request.onupgradeneeded=e=>{
 
-db = e.target.result;
+db=e.target.result;
 
 db.createObjectStore("profiles",{keyPath:"id",autoIncrement:true});
 
-let medidas = db.createObjectStore("medidas",{keyPath:"id",autoIncrement:true});
+let medidas=db.createObjectStore("medidas",{keyPath:"id",autoIncrement:true});
 
 medidas.createIndex("profileId","profileId",{unique:false});
 
 };
 
-request.onsuccess = async e => {
+request.onsuccess=async e=>{
 
-db = e.target.result;
+db=e.target.result;
 
-profile = await pegarProfile();
+profile=await pegarProfile();
 
-if(profile){
-
-mostrarApp();
-
-}else{
-
-mostrarSetup();
-
-}
+if(profile) iniciarApp();
+else setup.classList.remove("hidden");
 
 };
 
-/* --------------------------
-PROFILE
--------------------------- */
-
 function criarPerfil(){
 
-let nome = document.getElementById("nome").value;
-
-let tx = db.transaction("profiles","readwrite");
+let tx=db.transaction("profiles","readwrite");
 
 tx.objectStore("profiles").add({
 
-nome:nome,
-data:new Date()
+nome:nome.value
 
 });
 
-tx.oncomplete = ()=>location.reload();
+tx.oncomplete=()=>location.reload();
 
 }
 
@@ -242,82 +251,23 @@ function pegarProfile(){
 
 return new Promise(resolve=>{
 
-let tx = db.transaction("profiles","readonly");
+let tx=db.transaction("profiles","readonly");
 
-let req = tx.objectStore("profiles").getAll();
+let req=tx.objectStore("profiles").getAll();
 
-req.onsuccess = ()=>resolve(req.result[0]);
-
-});
-
-}
-
-/* --------------------------
-MEDIDAS
--------------------------- */
-
-function salvarMedida(){
-
-let peso = Number(document.getElementById("peso").value);
-
-let cintura = Number(document.getElementById("cintura").value);
-
-let gordura = Number(document.getElementById("gordura").value);
-
-let tx = db.transaction("medidas","readwrite");
-
-tx.objectStore("medidas").add({
-
-profileId:profile.id,
-data:new Date(),
-peso:peso,
-cintura:cintura,
-gordura:gordura
-
-});
-
-tx.oncomplete = ()=>{
-
-voltar();
-carregarDashboard();
-
-};
-
-}
-
-function pegarMedidas(){
-
-return new Promise(resolve=>{
-
-let tx = db.transaction("medidas","readonly");
-
-let index = tx.objectStore("medidas").index("profileId");
-
-let req = index.getAll(profile.id);
-
-req.onsuccess = ()=>resolve(req.result);
+req.onsuccess=()=>resolve(req.result[0]);
 
 });
 
 }
 
-/* --------------------------
-UI
--------------------------- */
-
-function mostrarSetup(){
-
-setup.classList.remove("hidden");
-
-}
-
-function mostrarApp(){
+function iniciarApp(){
 
 setup.classList.add("hidden");
 
 app.classList.remove("hidden");
 
-nomeUsuario.innerText = "Olá, "+profile.nome;
+nomeUsuario.innerText="Olá, "+profile.nome;
 
 carregarDashboard();
 
@@ -339,64 +289,74 @@ app.classList.remove("hidden");
 
 }
 
-/* --------------------------
-DASHBOARD
--------------------------- */
+function salvarMedida(){
 
-async function carregarDashboard(){
+let tx=db.transaction("medidas","readwrite");
 
-let medidas = await pegarMedidas();
+tx.objectStore("medidas").add({
 
-if(medidas.length==0) return;
+profileId:profile.id,
+data:new Date(),
 
-medidas.sort((a,b)=> new Date(a.data)-new Date(b.data));
+peso:Number(peso.value),
+gordura:Number(gordura.value),
+cintura:Number(cintura.value),
+quadril:Number(quadril.value),
 
-let ultimo = medidas[medidas.length-1];
+bracoE:Number(bracoE.value),
+bracoD:Number(bracoD.value),
 
-pesoAtual.innerText = ultimo.peso+" kg";
+coxaE:Number(coxaE.value),
+coxaD:Number(coxaD.value)
 
-renderGrafico(medidas);
+});
 
-renderHistorico(medidas);
+tx.oncomplete=()=>{
+
+voltar();
+carregarDashboard();
+
+};
 
 }
 
-/* --------------------------
-GRAFICO
--------------------------- */
+function pegarMedidas(){
 
-function renderGrafico(medidas){
+return new Promise(resolve=>{
 
-let ctx = document.getElementById("graficoPeso");
+let tx=db.transaction("medidas","readonly");
 
-let labels = medidas.map(m=>
-new Date(m.data).toLocaleDateString()
-);
+let index=tx.objectStore("medidas").index("profileId");
 
-let data = medidas.map(m=>m.peso);
+let req=index.getAll(profile.id);
 
-if(chart) chart.destroy();
+req.onsuccess=()=>resolve(req.result);
 
-chart = new Chart(ctx,{
+});
+
+}
+
+function criarGrafico(id,label,labels,data,cor){
+
+if(charts[id]) charts[id].destroy();
+
+charts[id]=new Chart(document.getElementById(id),{
 
 type:"line",
 
 data:{
-labels:labels,
+labels,
 datasets:[{
-label:"Peso",
-data:data,
-borderColor:"#00c853",
-backgroundColor:"rgba(0,200,83,0.2)"
+label,
+data,
+borderColor:cor,
+backgroundColor:cor+"33",
+fill:true
 }]
 },
 
 options:{
-plugins:{
-legend:{
-labels:{color:"white"}
-}
-},
+plugins:{legend:{labels:{color:"white"}}},
 scales:{
 x:{ticks:{color:"white"}},
 y:{ticks:{color:"white"}}
@@ -407,24 +367,56 @@ y:{ticks:{color:"white"}}
 
 }
 
-/* --------------------------
-HISTORICO
--------------------------- */
+async function carregarDashboard(){
+
+let medidas=await pegarMedidas();
+
+if(medidas.length==0) return;
+
+medidas.sort((a,b)=>new Date(a.data)-new Date(b.data));
+
+let ultimo=medidas[medidas.length-1];
+
+pesoAtual.innerText=ultimo.peso+" kg";
+
+let labels=medidas.map(m=>new Date(m.data).toLocaleDateString());
+
+criarGrafico("graficoPeso","Peso",labels,medidas.map(m=>m.peso),"#00c853");
+
+criarGrafico("graficoGordura","Gordura",labels,medidas.map(m=>m.gordura),"#ff9800");
+
+criarGrafico("graficoCintura","Cintura",labels,medidas.map(m=>m.cintura),"#2196f3");
+
+criarGrafico("graficoBraco","Braço",labels,
+medidas.map(m=>((m.bracoE||0)+(m.bracoD||0))/2),"#e91e63");
+
+criarGrafico("graficoPerna","Coxa",labels,
+medidas.map(m=>((m.coxaE||0)+(m.coxaD||0))/2),"#9c27b0");
+
+criarGrafico("graficoQuadril","Quadril",labels,
+medidas.map(m=>m.quadril),"#00bcd4");
+
+renderHistorico(medidas);
+
+carregarDatasComparacao(medidas);
+
+}
 
 function renderHistorico(medidas){
 
 historico.innerHTML="";
 
-medidas.reverse().forEach(m=>{
+medidas.slice().reverse().forEach(m=>{
 
-historico.innerHTML += `
+historico.innerHTML+=`
 
 <div class="item">
 
 ${new Date(m.data).toLocaleDateString()}<br>
+
 Peso: ${m.peso} kg<br>
 Cintura: ${m.cintura} cm<br>
-Gordura: ${m.gordura} %
+Quadril: ${m.quadril} cm
 
 </div>
 
@@ -434,7 +426,77 @@ Gordura: ${m.gordura} %
 
 }
 
+function carregarDatasComparacao(medidas){
+
+dataInicial.innerHTML="";
+dataFinal.innerHTML="";
+
+medidas.forEach((m,i)=>{
+
+let data=new Date(m.data).toLocaleDateString();
+
+dataInicial.innerHTML+=`<option value="${i}">${data}</option>`;
+
+dataFinal.innerHTML+=`<option value="${i}">${data}</option>`;
+
+});
+
+}
+
+function compararMedidas(){
+
+let medidas;
+
+pegarMedidas().then(m=>{
+
+medidas=m;
+
+let inicial=medidas[dataInicial.value];
+let final=medidas[dataFinal.value];
+
+resultadoComparacao.innerHTML=
+
+linha("Peso",inicial.peso,final.peso,"kg")+
+linha("Cintura",inicial.cintura,final.cintura,"cm")+
+linha("Quadril",inicial.quadril,final.quadril,"cm");
+
+});
+
+}
+
+function linha(nome,a,b,u){
+
+let diff=b-a;
+
+let perc=((diff/a)*100).toFixed(1);
+
+let cor=diff<0?"#00c853":"#ff5252";
+
+let sinal=diff>0?"+":"";
+
+return`
+
+<div class="item">
+
+<b>${nome}</b><br>
+
+${a} → ${b}<br>
+
+<span style="color:${cor}">
+
+${sinal}${diff.toFixed(1)} ${u}
+(${sinal}${perc}%)
+
+</span>
+
+</div>
+
+`;
+
+}
+
 </script>
 
 </body>
 </html>
+```

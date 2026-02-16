@@ -1,6 +1,3 @@
-```javascript
-/* BODYTRACK PRO - APP.JS FINAL LIMPO E CORRIGIDO */
-
 "use strict";
 
 /* =========================
